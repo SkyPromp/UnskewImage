@@ -21,15 +21,6 @@ def GetCorners(img):
     cv.setMouseCallback("img", lambda e, x, y, f, p: None)
 
     return points
-    points.sort(key=lambda point: point[0])
-
-    if points[0][1] > points[1][1]:
-        points[0], points[1] = points[1], points[0]
-
-    if points[2][1] < points[3][1]:
-        points[0], points[1] = points[1], points[0]
-
-    return points
 
 
 def Lerp(a, b, scale):
@@ -39,49 +30,34 @@ def Lerp(a, b, scale):
 def Skew(img, skew):
     corners = GetCorners(img)
 
-    for i in range(5):
-        cv.line(img, corners[i % 4], corners[(i + 1) % 4], (0, 0, 255))
-        cv.imshow("img", img)
-        cv.waitKey(400)
-
     width = corners[2][0] - corners[0][0]
     height = corners[2][1] - corners[0][1]
 
-    #pixels = [[(255, 255, 255)] for c in range(width)] for r in range(height)]
-    pixels = skew
-    pixels = cv.resize(pixels, (width, height))
-
-    density = 1
+    skew = cv.resize(skew, (width, height))
 
     for r in range(height):
         for c in range(width):
-            if r % density == 0 and c % density == 0:
-                r_percent = r/height
-                c_percent = c/width
+            r_percent = r/height
+            c_percent = c/width
 
-                # TL -> TR
-                a_r = (Lerp(corners[0][1], corners[3][1], c_percent))
-                a_c = (Lerp(corners[0][0], corners[3][0], c_percent))
+            # TL -> TR
+            a_r = (Lerp(corners[0][1], corners[3][1], c_percent))
+            a_c = (Lerp(corners[0][0], corners[3][0], c_percent))
 
-                # BL -> BR
-                b_r = (Lerp(corners[1][1], corners[2][1], c_percent))
-                b_c = (Lerp(corners[1][0], corners[2][0], c_percent))
+            # BL -> BR
+            b_r = (Lerp(corners[1][1], corners[2][1], c_percent))
+            b_c = (Lerp(corners[1][0], corners[2][0], c_percent))
 
-                r_lerp = int(Lerp(a_r, b_r, r_percent))
-                c_lerp = int(Lerp(a_c, b_c, r_percent))
+            r_lerp = int(Lerp(a_r, b_r, r_percent))
+            c_lerp = int(Lerp(a_c, b_c, r_percent))
 
-                img[r_lerp][c_lerp] = pixels[r][c]
+            img[r_lerp][c_lerp] = skew[r][c]
 
     return img
 
 
 def UnSkew(img):
     corners = GetCorners(img)
-
-    for i in range(5):
-        cv.line(img, corners[i % 4], corners[(i + 1) % 4], (0, 0, 255), 5)
-        cv.imshow("img", img)
-        cv.waitKey(400)
 
     width = corners[2][0] - corners[0][0]
     height = corners[2][1] - corners[0][1]
